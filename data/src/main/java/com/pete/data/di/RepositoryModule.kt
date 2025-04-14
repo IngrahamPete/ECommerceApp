@@ -1,8 +1,9 @@
 package com.pete.data.di
 
 import com.pete.data.di.repository.ProductRepositoryImp
+import com.pete.domain.di.repository.ProductRepository
 import org.koin.dsl.module
 
 val repositoryModule=module{
-    single{ProductRepositoryImp(get()) }
+    single<ProductRepository> {ProductRepositoryImp(get()) }
 }

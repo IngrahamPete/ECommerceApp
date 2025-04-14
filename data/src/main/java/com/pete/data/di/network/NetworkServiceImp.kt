@@ -19,12 +19,13 @@ import io.ktor.utils.io.errors.IOException
 
 class NetworkServiceImp( val client: HttpClient): NetworkService {
     override suspend fun getProducts(): ResultWrapper<List<Product>> {
-       return makeWebRequest(
-           url="http://fakestoreapi.com/products",
-           method=HttpMethod.Get,
-           mapper = { dataModule: List<DataProductModel> ->
-               dataModule.map{it.toProduct()}
-           })
+        return makeWebRequest(
+            url = "https://fakestoreapi.com/products",
+            method = HttpMethod.Get,
+            mapper = { dataModels: List<DataProductModel> ->
+                dataModels.map { it.toProduct() }
+            }
+        )
     }
 
     @OptIn(InternalAPI::class)
@@ -34,16 +35,16 @@ class NetworkServiceImp( val client: HttpClient): NetworkService {
         body:Any?=null,
         headers:Map<String,String>?=null,
         parameter:Map<String,String>?= emptyMap(),
-        noinline mapper:(T)->R)
-    :ResultWrapper<R> {
-       return try {
+        noinline mapper:((T)->R)? =null
+    ):ResultWrapper<R> {
+        return try {
             val response = client.request(url) {
                 this.method = method
 
                 //apply query parameters
                 url {
                     this.parameters.appendAll(Parameters.build {
-                        parameter?.forEach() { (key, value) ->
+                        parameter?.forEach { (key, value) ->
                             append(key, value)
                         }
                     })
@@ -57,17 +58,17 @@ class NetworkServiceImp( val client: HttpClient): NetworkService {
                 }
                 contentType(ContentType.Application.Json)
             }.body<T>()
-            val result = mapper.invoke(response) ?: response as R
+            val result = mapper?.invoke(response) ?: response as R
             return ResultWrapper.Success(result)
         } catch (e: ClientRequestException) {
-            ResultWrapper.Error(e)
+            ResultWrapper.Failure(e)
         } catch (e: ServerResponseException) {
-            ResultWrapper.Error(e)
+            ResultWrapper.Failure(e)
         } catch (e: IOException) {
-            ResultWrapper.Error(e)
+            ResultWrapper.Failure(e)
         } catch (e: Exception) {
-            ResultWrapper.Error(e)
+            ResultWrapper.Failure(e)
         }
 
     }
-}
+    }

@@ -12,9 +12,11 @@ class EcommerceApp:Application() {
         super.onCreate()
         startKoin {
             androidContext(this@EcommerceApp)
-            appModule
-            dataModule
-            domainModule
+            modules(listOf(
+                appModule,
+                dataModule,
+                domainModule
+            ))
         }
 
     }

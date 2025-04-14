@@ -1,9 +1,7 @@
 package com.pete.domain.di.usecase
 
-import com.pete.domain.di.repository.ProductRepsoitory
+import com.pete.domain.di.repository.ProductRepository
 
-class GetProductUseCase(private val repository:ProductRepsoitory) {
+class GetProductUseCase(private val repository:ProductRepository) {
     suspend  fun execute()=repository.getProducts()
-
-
 }
