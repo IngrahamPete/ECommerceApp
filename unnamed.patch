@@ -1,0 +1,20 @@
+Index: data/src/main/java/com/pete/data/di/RepositoryModule.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/data/src/main/java/com/pete/data/di/RepositoryModule.kt b/data/src/main/java/com/pete/data/di/RepositoryModule.kt
+new file mode 100644
+--- /dev/null	(date 1745123824147)
++++ b/data/src/main/java/com/pete/data/di/RepositoryModule.kt	(date 1745123824147)
+@@ -0,0 +1,9 @@
++package com.pete.data.di
++
++import com.pete.data.di.repository.ProductRepositoryImp
++import com.pete.domain
++import org.koin.dsl.module
++
++val repositoryModule=module{
++    single<ProductRepository> {ProductRepositoryImp(get()) }
++}
+\ No newline at end of file
