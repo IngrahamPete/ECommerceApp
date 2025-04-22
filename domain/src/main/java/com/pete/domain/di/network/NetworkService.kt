@@ -1,9 +1,11 @@
 package com.pete.domain.di.network
 
-import com.pete.domain.di.model.Product
+import com.pete.domain.di.model.CategoriesListModel
+import com.pete.domain.di.model.ProductListModel
 
 interface NetworkService {
-    suspend fun getProducts(): ResultWrapper<List<Product>>
+    suspend fun getProducts(category: Int?): ResultWrapper<ProductListModel>
+    suspend fun getCategories(): ResultWrapper<CategoriesListModel>
 }
 sealed class ResultWrapper<out T>
 {

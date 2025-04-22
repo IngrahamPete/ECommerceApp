@@ -5,19 +5,20 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 class DataProductModel(
-    val id: Int,
-    val title: String,
-    val price: Double,
-    val category: String,
-    val description: String,
-    val image: String
-){
-    fun toProduct()= com.pete.domain.di.model.Product(
-        id = id,
+    val categoryId:Int,
+    val description:String,
+    val id:Int,
+    val image:String,
+    val price:Double,
+    val title:String
+)
+{
+    fun toProduct()=com.pete.domain.di.model.Product(
+        categoryId=categoryId,
+        description=description,
+        id=id,
+        image=image,
         title = title,
-        price = price,
-        category = category,
-        description = description,
-        image=image
+        price = price
     )
 }

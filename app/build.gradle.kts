@@ -53,6 +53,7 @@ android {
 
 dependencies {
     implementation("androidx.compose.runtime:runtime:$version")
+    implementation(libs.coil.compose)
     implementation(libs.kotlin.stdlib)
     implementation(project(":data"))
     implementation(project(":domain"))
@@ -64,6 +65,7 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.play.services.analytics.impl)
     testImplementation(libs.junit)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)

@@ -1,5 +1,5 @@
 [versions]
-agp = "8.8.2"
+agp = "8.9.1"
 coilCompose = "2.7.0"
 kotlin = "2.1.10"
 coreKtx = "1.13.1"
@@ -34,6 +34,7 @@ uiTestJunit4 = "1.7.4"
 rules = "1.6.1"
 runner = "1.6.2"
 coreKtxVersion = "1.16.0"
+playServicesAnalyticsImpl = "18.2.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -85,6 +86,7 @@ androidx-core = { module = "androidx.test:core", version.ref = "rules" }
 androidx-rules = { module = "androidx.test:rules", version.ref = "rules" }
 androidx-runner = { module = "androidx.test:runner", version.ref = "runner" }
 androidx-tracing = { group = "androidx.tracing", name = "tracing", version.ref = "tracing" }
+play-services-analytics-impl = { group = "com.google.android.gms", name = "play-services-analytics-impl", version.ref = "playServicesAnalyticsImpl" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
