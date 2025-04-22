@@ -9,8 +9,4 @@ class CategoryRepositoryImp(val networkService: NetworkService): CategoryReposit
     override suspend fun getCategories(): ResultWrapper<CategoriesListModel> {
         return networkService.getCategories()
     }
-
-
-
-
 }

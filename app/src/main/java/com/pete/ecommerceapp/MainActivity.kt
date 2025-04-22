@@ -106,7 +106,6 @@ fun BottomNavigationBar(navController: NavController){
 sealed class BottomNavItems(val route:String,val title:String,val icon:Int)
 {
     data object Home:BottomNavItems("home","Home", icon=R.drawable.baseline_home_24)
-    data object Search:BottomNavItems("search","Search", icon=R.drawable.baseline_search_24)
     data object Cart:BottomNavItems("cart","Cart", icon=R.drawable.baseline_shopping_cart_24)
     data object Profile:BottomNavItems("profile","Profile", icon=R.drawable.baseline_person_24)
 }}
