@@ -1,5 +1,5 @@
 [versions]
-agp = "8.9.1"
+agp = "8.9.2"
 coilCompose = "2.7.0"
 kotlin = "2.1.10"
 coreKtx = "1.13.1"
@@ -19,6 +19,7 @@ koin = "4.0.0-RC1"
 ktor = "2.3.2"
 navigaitonCompose = "2.8.0-alpha08"
 serialization = "1.6.3"
+
 
 
 

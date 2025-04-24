@@ -23,8 +23,17 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
+import com.pete.ecommerceapp.model.UiProductModel
+import com.pete.ecommerceapp.navigation.CartScreen
+import com.pete.ecommerceapp.navigation.HomeScreen
+import com.pete.ecommerceapp.navigation.ProductDetails
+import com.pete.ecommerceapp.navigation.ProfileScreen
+import com.pete.ecommerceapp.navigation.productNavType
+import com.pete.ecommerceapp.ui.feature.product_details.ProductDetailsScreen
 import com.pete.ecommerceapp.ui.theme.ECommerceAppTheme
 import com.pete.ecommerceapp.ui.theme.feature.home.HomeScreen
+import kotlin.reflect.typeOf
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -41,16 +50,21 @@ class MainActivity : ComponentActivity() {
 
                 ) {
                     Surface(modifier = Modifier.padding(it)) {  }
-                    NavHost(navController=navController, startDestination = "home") {
-                        composable("home"){
+                    NavHost(navController=navController, startDestination = HomeScreen) {
+                        composable<HomeScreen> {
                             HomeScreen(navController)
                         }
-                        composable("search"){
+                        composable<CartScreen>{
                             Text(text = "Search")
                         }
-                        composable("cart"){
+                        composable<ProfileScreen>{
                             Text(text = "Cart")
                     }
+                        composable<ProductDetails>(
+                            typeMap = mapOf(typeOf<UiProductModel>() to productNavType)){
+                            val productRoute=it.toRoute<ProductDetails>()
+                            ProductDetailsScreen(navController,productRoute.product)
+                        }
                 }
 
             }
@@ -69,8 +83,9 @@ fun BottomNavigationBar(navController: NavController){
         )
         items.forEach {
             item->
+            val isSelected =  currentRoute?.substringBefore('?')==item.route::class.qualifiedName
             NavigationBarItem(
-                selected = currentRoute==item.route,
+                selected =isSelected,
                 onClick = { navController.navigate(item.route){
                     popUpTo(navController.graph.startDestinationId){
                         saveState=true
@@ -83,7 +98,7 @@ fun BottomNavigationBar(navController: NavController){
                     Image(
                         painter = painterResource(id = item.icon),
                     contentDescription = null,
-                        colorFilter = ColorFilter.tint(if (currentRoute==item.route) MaterialTheme.colorScheme.primary else Color.Gray))
+                        colorFilter = ColorFilter.tint(if (isSelected) MaterialTheme.colorScheme.primary else Color.Gray))
 
                 },
                 colors = NavigationBarItemDefaults.colors().copy(
@@ -102,10 +117,10 @@ fun BottomNavigationBar(navController: NavController){
 
 }
 
-
-sealed class BottomNavItems(val route:String,val title:String,val icon:Int)
+//Used in navroutes to change pages in the app
+sealed class BottomNavItems(val route:Any,val title:String,val icon:Int)
 {
-    data object Home:BottomNavItems("home","Home", icon=R.drawable.baseline_home_24)
-    data object Cart:BottomNavItems("cart","Cart", icon=R.drawable.baseline_shopping_cart_24)
-    data object Profile:BottomNavItems("profile","Profile", icon=R.drawable.baseline_person_24)
+    data object Home:BottomNavItems(HomeScreen,"Home", icon=R.drawable.baseline_home_24)
+    data object Cart:BottomNavItems(CartScreen,"Cart", icon=R.drawable.baseline_shopping_cart_24)
+    data object Profile:BottomNavItems(ProfileScreen,"Profile", icon=R.drawable.baseline_person_24)
 }}

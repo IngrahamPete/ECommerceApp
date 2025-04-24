@@ -13,9 +13,13 @@ import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import org.koin.dsl.module
 
+//provides HTTpClient and binds it to NetworkService
 val networkModule= module {
     single {
-        HttpClient(CIO) {
+        HttpClient(CIO) {/*A multiplatform asynchronous HTTP client,
+         which allows you to make requests and handle responses,
+         extend its functionality with plugins, such as authentication,
+         JSON serialization, and so on.*/
             install(ContentNegotiation) {
                 json(Json {
                         prettyPrint = true

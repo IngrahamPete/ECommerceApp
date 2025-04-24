@@ -1,7 +1,11 @@
 package com.pete.ecommerceapp.ui.theme.feature.home
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,6 +32,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -44,6 +49,8 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.pete.domain.di.model.Product
 import com.pete.ecommerceapp.R
+import com.pete.ecommerceapp.model.UiProductModel
+import com.pete.ecommerceapp.navigation.ProductDetails
 import org.koin.androidx.compose.koinViewModel
 
 
@@ -92,7 +99,9 @@ fun HomeScreen(navController: NavController, viewModel:HomeViewModel= koinViewMo
                 popularProducts.value,
                 categories.value,
                 loading.value,
-                error.value)
+                error.value, onClick = {
+                    navController.navigate(ProductDetails(UiProductModel.fromProduct(it)))
+                })
         }
     }
 }
@@ -164,7 +173,7 @@ fun ProfileHeader()
 fun HomeContent(featured:List<Product>,
                 popularProduct: List<Product>,
                 categories:List<String>,isLoading:Boolean=false,
-                errorMsg:String?=null)
+                errorMsg:String?=null,onClick: (Product) -> Unit)
 {
     LazyColumn {
         item {
@@ -184,21 +193,36 @@ fun HomeContent(featured:List<Product>,
                     Text(text = "Loading...", style = MaterialTheme.typography.bodyMedium)
                 }
             }
-            errorMsg?.let {  Text(text = it, style = MaterialTheme.typography.bodyMedium,)
+            errorMsg?.let {  Text(text = it, style = MaterialTheme.typography.bodyMedium)
             }
             if (categories.isNotEmpty())
                 LazyRow (Modifier.fillMaxWidth()){
-                    items(categories) {category->
-                        Text(text = category.replaceFirstChar { it.uppercase() } ,
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier.
-                            padding(horizontal = 8.dp).
-                            clip(RoundedCornerShape(8.dp)).
-                            background(MaterialTheme.colorScheme.primary).
-                            padding(8.dp)
-                        )
+                    /*Layout animation*/
+                    items(categories, key={it})
+                    {category->
+                        val isVisible= remember {
+                            mutableStateOf(false)
+                        }
+                        LaunchedEffect(key1 = true){
+                            isVisible.value=true
+
+                        }
+                        AnimatedVisibility(visible =isVisible.value,enter= fadeIn()+ expandVertically())
+                        //animation end
+                        {
+                            Text(text = category.replaceFirstChar { it.uppercase() } ,
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                modifier = Modifier.
+                                padding(horizontal = 8.dp).
+                                clip(RoundedCornerShape(8.dp)).
+                                background(MaterialTheme.colorScheme.primary).
+                                padding(8.dp)
+                            )
+
+                        }
+
                     }
 
                 }
@@ -206,12 +230,12 @@ fun HomeContent(featured:List<Product>,
 
             if (featured.isNotEmpty())
             {
-                HomeProductRow(products = featured, title = "Featured")
+                HomeProductRow(products = featured, title = "Featured",onClick)
                 Spacer(modifier = Modifier.size(16.dp))
             }
             if (popularProduct.isNotEmpty())
             {
-                HomeProductRow(products = popularProduct,title="Popular Products")
+                HomeProductRow(products = popularProduct,title="Popular Products",onClick=onClick)
             }
         }
     }
@@ -219,7 +243,7 @@ fun HomeContent(featured:List<Product>,
 
 
 @Composable
-fun HomeProductRow(products:List<Product>,title:String)
+fun HomeProductRow(products:List<Product>,title:String,onClick: (Product) -> Unit)
 {
     Column {
         Box(
@@ -247,8 +271,19 @@ fun HomeProductRow(products:List<Product>,title:String)
         }
         Spacer(modifier = Modifier.size(8.dp))
         LazyRow {
-            items(products) { products ->
-                ProductItem(product = products)
+            items(products, key = {it.id}) { products ->
+                val isVisible= remember {
+                    mutableStateOf(false)
+                }
+                LaunchedEffect(key1 = true){
+                    isVisible.value=true
+
+                }
+                AnimatedVisibility(visible =isVisible.value,enter= fadeIn()+ expandVertically())
+                {
+                    ProductItem(product = products, onClick)
+                }
+
             }
         }
     }
@@ -256,10 +291,10 @@ fun HomeProductRow(products:List<Product>,title:String)
 
 
 @Composable
-fun ProductItem(product: Product) {
+fun ProductItem(product: Product,onClick:(Product)->Unit) {
     Card(
         modifier = Modifier.padding(horizontal = 8.dp)
-            .size(width = 126.dp, height = 144.dp),
+            .size(width = 126.dp, height = 144.dp).clickable { onClick(product) },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(contentColor = Color.Black)
     ) {

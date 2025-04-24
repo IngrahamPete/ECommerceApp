@@ -10,3 +10,5 @@ val repositoryModule=module{
     single<ProductRepository> {ProductRepositoryImp(get()) }
     single <CategoryRepository> { CategoryRepositoryImp(get()) }
 }
+
+//binds the repository to the viewmodel
