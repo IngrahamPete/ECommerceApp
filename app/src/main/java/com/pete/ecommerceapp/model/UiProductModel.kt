@@ -8,12 +8,12 @@ import kotlinx.serialization.Serializable
 @Serializable
 @Parcelize
 data class UiProductModel(
-    val id: Int,
-    val title: String,
-    val price: Double,
-    val categoryId: Int,
-    val description: String,
-    val image: String
+    var id: Int,
+    var title: String,
+    var price: Double,
+    var categoryId: Int,
+    var description: String,
+    var image: String
 ) : Parcelable {
     companion object {
         fun fromProduct(product: com.pete.domain.di.model.Product) = UiProductModel(

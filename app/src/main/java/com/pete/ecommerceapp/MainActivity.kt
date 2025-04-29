@@ -4,6 +4,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -15,6 +17,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
@@ -26,13 +30,16 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.pete.ecommerceapp.model.UiProductModel
 import com.pete.ecommerceapp.navigation.CartScreen
+import com.pete.ecommerceapp.navigation.CartSummaryScreen
 import com.pete.ecommerceapp.navigation.HomeScreen
 import com.pete.ecommerceapp.navigation.ProductDetails
 import com.pete.ecommerceapp.navigation.ProfileScreen
 import com.pete.ecommerceapp.navigation.productNavType
+import com.pete.ecommerceapp.ui.feature.cart.CartScreen
+import com.pete.ecommerceapp.ui.feature.home.HomeScreen
 import com.pete.ecommerceapp.ui.feature.product_details.ProductDetailsScreen
+import com.pete.ecommerceapp.ui.feature.summary.CartSummaryScreen
 import com.pete.ecommerceapp.ui.theme.ECommerceAppTheme
-import com.pete.ecommerceapp.ui.theme.feature.home.HomeScreen
 import kotlin.reflect.typeOf
 
 class MainActivity : ComponentActivity() {
@@ -40,37 +47,54 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+            val shouldShowFab = remember {
+                mutableStateOf(true)
+            }
             ECommerceAppTheme {
+                val shouldShowBottomNav = remember {
+                    mutableStateOf(true)
+                }
                 val navController = rememberNavController()
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     bottomBar = {
-                        BottomNavigationBar(navController)
+                        AnimatedVisibility(visible = shouldShowBottomNav.value, enter = fadeIn()) {
+                            BottomNavigationBar(navController)
+                        }
                     }
 
                 ) {
-                    Surface(modifier = Modifier.padding(it)) {  }
-                    NavHost(navController=navController, startDestination = HomeScreen) {
+                    Surface(modifier = Modifier.padding(it)) { }
+                    NavHost(navController = navController, startDestination = HomeScreen) {
                         composable<HomeScreen> {
+                            shouldShowBottomNav.value = true
+                            shouldShowFab.value = true
                             HomeScreen(navController)
                         }
-                        composable<CartScreen>{
-                            Text(text = "Search")
+                        composable<CartScreen> {
+                            shouldShowBottomNav.value = true
+                            shouldShowFab.value = false
+                            CartScreen(navController)
                         }
-                        composable<ProfileScreen>{
+                        composable<ProfileScreen> {
                             Text(text = "Cart")
-                    }
-                        composable<ProductDetails>(
-                            typeMap = mapOf(typeOf<UiProductModel>() to productNavType)){
-                            val productRoute=it.toRoute<ProductDetails>()
-                            ProductDetailsScreen(navController,productRoute.product)
                         }
+                        composable<CartSummaryScreen> {
+                            CartSummaryScreen(navController=navController)
+                        }
+                        composable<ProductDetails>(
+                            typeMap = mapOf(typeOf<UiProductModel>() to productNavType)
+                        ) {
+                            shouldShowBottomNav.value = false
+                            shouldShowFab.value = false
+                            val productRoute = it.toRoute<ProductDetails>()
+                            ProductDetailsScreen(navController, productRoute.product)
+                        }
+                    }
                 }
-
             }
         }
     }
-}
 
 @Composable
 fun BottomNavigationBar(navController: NavController){

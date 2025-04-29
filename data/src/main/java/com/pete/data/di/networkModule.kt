@@ -14,7 +14,7 @@ import kotlinx.serialization.json.Json
 import org.koin.dsl.module
 
 //provides HTTpClient and binds it to NetworkService
-val networkModule= module {
+val networkModule = module {
     single {
         HttpClient(CIO) {/*A multiplatform asynchronous HTTP client,
          which allows you to make requests and handle responses,
@@ -22,25 +22,25 @@ val networkModule= module {
          JSON serialization, and so on.*/
             install(ContentNegotiation) {
                 json(Json {
-                        prettyPrint = true
-                        isLenient = true
-                        ignoreUnknownKeys = true
-                    })
+                    prettyPrint = true
+                    isLenient = true
+                    ignoreUnknownKeys = true
+                })
             }
             install(Logging) {
-                level= LogLevel.ALL
-                logger=object: Logger
-                {
+                level = LogLevel.ALL
+                logger = object : Logger {
                     override fun log(message: String) {
-                        Log.d("BACKHANDLER",message)
+                        Log.d("NETWORK", message)
                     }
                 }
             }
-
         }
     }
     single<NetworkService> {
-        NetworkServiceImp(get())
+        NetworkServiceImp(
+            client = get(),
+            baseUrl = "https://ecommerce-ktor-4641e7ff1b63.herokuapp.com/v2"
+        )
     }
-
 }

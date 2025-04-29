@@ -1,4 +1,4 @@
-package com.pete.ecommerceapp.ui.theme.feature.home
+package com.pete.ecommerceapp.ui.feature.home
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
@@ -55,7 +55,7 @@ import org.koin.androidx.compose.koinViewModel
 
 
 @Composable
-fun HomeScreen(navController: NavController, viewModel:HomeViewModel= koinViewModel()) {
+fun HomeScreen(navController: NavController, viewModel: HomeViewModel = koinViewModel()) {
     val uiState = viewModel.uiState.collectAsState()
     val loading = remember{
         mutableStateOf(false)

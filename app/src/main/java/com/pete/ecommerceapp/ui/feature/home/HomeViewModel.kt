@@ -1,4 +1,4 @@
-package com.pete.ecommerceapp.ui.theme.feature.home
+package com.pete.ecommerceapp.ui.feature.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -32,7 +32,7 @@ private fun getAllProducts()
             _uiState.value = HomeScreenUIEvents.Error("Failed to load Products")
             return@launch
         }
-        _uiState.value = HomeScreenUIEvents.Success(featured,popularProducts,categories)
+        _uiState.value = HomeScreenUIEvents.Success(featured, popularProducts, categories)
     }
 }
     private suspend fun getCategories(): List<String> {

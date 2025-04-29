@@ -1,6 +1,9 @@
 package com.pete.ecommerceapp.ui.feature.product_details
 
+import android.widget.Toast
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -9,27 +12,27 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -46,214 +49,227 @@ fun ProductDetailsScreen(
     product: UiProductModel,
     viewModel: ProductDetailsViewModel = koinViewModel()
 ) {
+    val loading = remember {
+        mutableStateOf(false)
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
     ) {
-        ProductImageSection(imageUrl = product.image) {}
-        Spacer(Modifier.height(16.dp))
-        ProductTitlePriceSection(title = product.title, price = product.price)
-        Spacer(Modifier.height(8.dp))
-        ProductRatingSection(rating = 4.5f, reviewCount = 23)
-        Spacer(Modifier.height(16.dp))
-        ProductDescriptionSection(description = product.description)
-        Spacer(Modifier.height(16.dp))
-        var selectedSize by remember { mutableStateOf("1") }
-        ProductSizeSection(
-            sizes = listOf("1", "2", "3", "4"),
-            selected = selectedSize,
-            onSizeSelected = { selectedSize = it }
-        )
-        Spacer(Modifier.height(24.dp))
-        ProductActionSection(
-            onBuyNow = { /* TODO */ },
-            onAddToCart = { /* TODO */ }
-        )
-        Spacer(Modifier.height(24.dp))
-    }
-}
-
-@Composable
-private fun ProductImageSection(
-    imageUrl: String,
-    onBack: () -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(300.dp)
-    ) {
-        AsyncImage(
-            model = imageUrl,
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.matchParentSize()
-        )
-        // Back button
-        IconButton(
-            onClick = onBack,
-            modifier = Modifier
-                .padding(16.dp)
-                .size(40.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.7f))
-                .align(Alignment.TopStart)
+        Box(
+            modifier = Modifier.weight(1f).background(Color.White)
         ) {
-            Icon(
-                painter = painterResource(R.drawable.ic_launcher_background),
-                contentDescription = "Back",
-                tint = MaterialTheme.colorScheme.onSurface
+            AsyncImage(
+                model = product.image,
+                contentDescription = null,
+                contentScale = ContentScale.Fit,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.White)
+                    .align(Alignment.TopCenter)
+            )
+
+            Image(
+                painter = painterResource(id = R.drawable.baseline_360_24),
+                contentDescription = null,
+                modifier = Modifier
+                    .padding(16.dp)
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .clickable{
+                        navController.popBackStack()
+                    }
+                    .background(Color.LightGray.copy(alpha = 0.4f))
+                    .padding(8.dp)
+                    .align(Alignment.TopStart)
+            )
+
+            Image(
+                painter = painterResource(id = R.drawable.heart_outline),
+                contentDescription = null,
+                modifier = Modifier
+                    .padding(16.dp)
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(Color.LightGray.copy(alpha = 0.4f))
+                    .padding(8.dp)
+                    .align(Alignment.TopEnd)
             )
         }
-    }
-}
-
-@Composable
-private fun ProductTitlePriceSection(title: String, price: Double) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.weight(1f)
-        )
-        Text(
-            text = "$${"%.2f".format(price)}",
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.primary
-        )
-    }
-}
-
-@Composable
-private fun ProductRatingSection(rating: Float, reviewCount: Int) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            painter = painterResource(R.drawable.baseline_1k_plus_24),
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary
-        )
-        Spacer(Modifier.width(4.dp))
-        Text(
-            text = "%.1f".format(rating),
-            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold)
-        )
-        Spacer(Modifier.width(8.dp))
-        Text(
-            text = "($reviewCount Reviews)",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-        )
-    }
-}
-
-@Composable
-private fun ProductDescriptionSection(description: String) {
-    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-        Text(
-            text = "Description",
-            style = MaterialTheme.typography.titleMedium
-        )
-        Spacer(Modifier.height(8.dp))
-        Text(
-            text = description,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-            maxLines = 6
-        )
-    }
-}
-
-@Composable
-private fun ProductSizeSection(
-    sizes: List<String>,
-    selected: String,
-    onSizeSelected: (String) -> Unit
-) {
-    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-        Text(
-            text = "Size",
-            style = MaterialTheme.typography.titleMedium
-        )
-        Spacer(Modifier.height(8.dp))
-        Row {
-            sizes.forEach { size ->
-                SizeItem(
-                    size = size,
-                    isSelected = size == selected,
-                    onClick = { onSizeSelected(size) }
+        Column(modifier = Modifier.fillMaxSize()) {
+            Row(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = product.title,
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .weight(1f)
                 )
-                Spacer(Modifier.width(8.dp))
+                Text(
+                    text = "$${product.price}",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(16.dp),
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Image(painter = painterResource(id = R.drawable.star_outline), contentDescription = null)
+                Spacer(modifier = Modifier.size(4.dp))
+                Text(
+                    text = "4.5",
+                    style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold),
+                )
+                Spacer(modifier = Modifier.size(16.dp))
+                Text(
+                    text = "(10 Reviews)",
+                    style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold),
+                    color = Color.Gray
+                )
+            }
+            Spacer(modifier = Modifier.size(16.dp))
+            Text(
+                text = "Description",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(start = 16.dp)
+            )
+            Spacer(modifier = Modifier.size(8.dp))
+            Text(
+                text = product.description,
+                style = MaterialTheme.typography.bodySmall,
+                minLines = 3,
+                maxLines = 6,
+                modifier = Modifier.padding(horizontal = 16.dp),
+                color = Color.Gray
+            )
+            Spacer(modifier = Modifier.size(8.dp))
+            Text(
+                text = "Size",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(start = 16.dp)
+            )
+            Spacer(modifier = Modifier.size(8.dp))
+            Row(modifier = Modifier.padding(horizontal = 16.dp)) {
+                repeat(4) {
+                    SizeItem(size = "${it + 1}", isSelected = it == 0) {}
+                }
+            }
+            Spacer(modifier = Modifier.size(16.dp))
+            Row(modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp)) {
+                Button(
+                    onClick = {
+                        viewModel.addProductToCart(product)
+                    },
+                    modifier = Modifier.weight(1f),
+                    enabled = !loading.value
+                ) {
+                    Text(text = "Buy Now")
+                }
+                Spacer(modifier = Modifier.size(20.dp))
+                IconButton(
+                    onClick = {
+                        viewModel.addProductToCart(product)
+                    },
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    colors = IconButtonDefaults.iconButtonColors()
+                        .copy(containerColor = Color.LightGray.copy(alpha = 0.4f)),
+                    enabled = !loading.value
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.baseline_shopping_cart_24),
+                        contentDescription = null
+                    )
+                }
+            }
+
+        }
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        val uiState = viewModel.state.collectAsState()
+        LaunchedEffect(uiState.value) {
+            when (uiState.value) {
+                is ProductDetailsEvent.Loading -> {
+                    // Show loading
+                    true.also { loading.value = it }
+                }
+
+                is ProductDetailsEvent.Success -> {
+                    // Show success
+                    loading.value = false
+                    Toast.makeText(
+                        navController.context,
+                        (uiState.value as ProductDetailsEvent.Success).message,
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+
+                is ProductDetailsEvent.Error -> {
+                    // Show error
+                    Toast.makeText(
+                        navController.context,
+                        (uiState.value as ProductDetailsEvent.Error).message,
+                        Toast.LENGTH_LONG
+                    ).show()
+                    loading.value = false
+                }
+
+                else -> {
+                    loading.value = false
+                }
+            }
+        }
+
+        if (loading.value) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.5f)),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                CircularProgressIndicator()
+                Text(
+                    text = "Adding to cart...",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontWeight = FontWeight.SemiBold
+                )
             }
         }
     }
 }
-
 @Composable
-private fun ProductActionSection(
-    onBuyNow: () -> Unit,
-    onAddToCart: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        Button(
-            onClick = onBuyNow,
-            modifier = Modifier.weight(1f)
-        ) {
-            Text("Buy Now")
-        }
-        IconButton(
-            onClick = onAddToCart,
-            modifier = Modifier
-                .size(56.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
-        ) {
-            Icon(
-                painter = painterResource(R.drawable.baseline_shopping_cart_24),
-                contentDescription = "Add to Cart",
-                tint = MaterialTheme.colorScheme.primary
-            )
-        }
-    }
-}
-
-@Composable
-fun SizeItem(
-    size: String,
-    isSelected: Boolean,
-    onClick: () -> Unit
-) {
+fun SizeItem(size: String, isSelected: Boolean, onClick: () -> Unit) {
     Box(
-        contentAlignment = Alignment.Center,
         modifier = Modifier
+            .padding(horizontal = 4.dp)
             .size(48.dp)
+            .clickable { onClick() }
             .clip(RoundedCornerShape(8.dp))
-            .background(
-                if (isSelected)
-                    MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
-                else
-                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f)
+            .border(
+                width = 1.dp,
+                color = Color.Gray,
+                shape = RoundedCornerShape(8.dp)
             )
-            .clickable(onClick = onClick)
+            .background(
+                if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent
+            )
+            .padding(8.dp)
     ) {
         Text(
             text = size,
-            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold)
+            style = MaterialTheme.typography.bodySmall,
+            modifier = Modifier.align(Alignment.Center),
+            color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
         )
     }
 }
