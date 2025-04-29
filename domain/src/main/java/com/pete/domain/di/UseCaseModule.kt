@@ -3,6 +3,7 @@ package com.pete.domain.di
 import com.pete.domain.di.usecase.AddToCartUseCase
 import com.pete.domain.di.usecase.CartSummaryUseCase
 import com.pete.domain.di.usecase.CategoriesUseCasse
+import com.pete.domain.di.usecase.DeleteProductUSeCase
 import com.pete.domain.di.usecase.GetCartUseCase
 import com.pete.domain.di.usecase.GetProductUseCase
 import com.pete.domain.di.usecase.UpdateQuantityUSeCase
@@ -14,6 +15,7 @@ val  UseCaseModule = module{
     factory {AddToCartUseCase(get())}
     factory {GetCartUseCase(get())}
     factory {UpdateQuantityUSeCase(get())}
+    factory {DeleteProductUSeCase(get())}
     factory {CartSummaryUseCase(get()) }
 
  }

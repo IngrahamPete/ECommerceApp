@@ -49,9 +49,9 @@ fun ProductDetailsScreen(
     product: UiProductModel,
     viewModel: ProductDetailsViewModel = koinViewModel()
 ) {
-    val loading = remember {
-        mutableStateOf(false)
-    }
+    val loading = remember { mutableStateOf(false) }
+    val selectedSize = remember { mutableStateOf(0) }
+    val isFavorite = remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -78,24 +78,10 @@ fun ProductDetailsScreen(
                     .padding(16.dp)
                     .size(48.dp)
                     .clip(CircleShape)
-                    .clickable{
-                        navController.popBackStack()
-                    }
+                    .clickable { navController.popBackStack() }
                     .background(Color.LightGray.copy(alpha = 0.4f))
                     .padding(8.dp)
                     .align(Alignment.TopStart)
-            )
-
-            Image(
-                painter = painterResource(id = R.drawable.heart_outline),
-                contentDescription = null,
-                modifier = Modifier
-                    .padding(16.dp)
-                    .size(48.dp)
-                    .clip(CircleShape)
-                    .background(Color.LightGray.copy(alpha = 0.4f))
-                    .padding(8.dp)
-                    .align(Alignment.TopEnd)
             )
         }
         Column(modifier = Modifier.fillMaxSize()) {
@@ -156,8 +142,12 @@ fun ProductDetailsScreen(
             )
             Spacer(modifier = Modifier.size(8.dp))
             Row(modifier = Modifier.padding(horizontal = 16.dp)) {
-                repeat(4) {
-                    SizeItem(size = "${it + 1}", isSelected = it == 0) {}
+                repeat(4) { index ->
+                    SizeItem(
+                        size = "${index + 1}",
+                        isSelected = selectedSize.value == index,
+                        onClick = { selectedSize.value = index }
+                    )
                 }
             }
             Spacer(modifier = Modifier.size(16.dp))
@@ -166,7 +156,15 @@ fun ProductDetailsScreen(
                 .padding(horizontal = 16.dp)) {
                 Button(
                     onClick = {
-                        viewModel.addProductToCart(product)
+                        if (selectedSize.value >= 0) {
+                            viewModel.addProductToCart(product)
+                        } else {
+                            Toast.makeText(
+                                navController.context,
+                                "Please select a size",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
                     },
                     modifier = Modifier.weight(1f),
                     enabled = !loading.value
@@ -176,7 +174,15 @@ fun ProductDetailsScreen(
                 Spacer(modifier = Modifier.size(20.dp))
                 IconButton(
                     onClick = {
-                        viewModel.addProductToCart(product)
+                        if (selectedSize.value >= 0) {
+                            viewModel.addProductToCart(product)
+                        } else {
+                            Toast.makeText(
+                                navController.context,
+                                "Please select a size",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
                     },
                     modifier = Modifier.padding(horizontal = 16.dp),
                     colors = IconButtonDefaults.iconButtonColors()
@@ -197,31 +203,25 @@ fun ProductDetailsScreen(
         val uiState = viewModel.state.collectAsState()
         LaunchedEffect(uiState.value) {
             when (uiState.value) {
-                is ProductDetailsEvent.Loading -> {
-                    // Show loading
-                    true.also { loading.value = it }
+                is ProductDetailsViewModel.ProductDetailsEvent.Loading -> {
+                    loading.value = true
                 }
-
-                is ProductDetailsEvent.Success -> {
-                    // Show success
+                is ProductDetailsViewModel.ProductDetailsEvent.Success -> {
                     loading.value = false
                     Toast.makeText(
                         navController.context,
-                        (uiState.value as ProductDetailsEvent.Success).message,
+                        (uiState.value as ProductDetailsViewModel.ProductDetailsEvent.Success).message,
                         Toast.LENGTH_LONG
                     ).show()
                 }
-
-                is ProductDetailsEvent.Error -> {
-                    // Show error
+                is ProductDetailsViewModel.ProductDetailsEvent.Error -> {
+                    loading.value = false
                     Toast.makeText(
                         navController.context,
-                        (uiState.value as ProductDetailsEvent.Error).message,
+                        (uiState.value as ProductDetailsViewModel.ProductDetailsEvent.Error).message,
                         Toast.LENGTH_LONG
                     ).show()
-                    loading.value = false
                 }
-
                 else -> {
                     loading.value = false
                 }

@@ -61,6 +61,7 @@ fun CartSummaryScreen(
         }
 
         is CartSummaryViewModel.CartSummaryEvent.Success -> {
+            CartSummaryScreenContent(cartSummary = event.summary)
 
         }
 

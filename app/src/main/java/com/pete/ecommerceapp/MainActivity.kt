@@ -77,9 +77,13 @@ class MainActivity : ComponentActivity() {
                             CartScreen(navController)
                         }
                         composable<ProfileScreen> {
+                            shouldShowBottomNav.value = true
+                            shouldShowFab.value = false
                             Text(text = "Cart")
                         }
                         composable<CartSummaryScreen> {
+                            shouldShowBottomNav.value = false
+                            shouldShowFab.value = false
                             CartSummaryScreen(navController=navController)
                         }
                         composable<ProductDetails>(

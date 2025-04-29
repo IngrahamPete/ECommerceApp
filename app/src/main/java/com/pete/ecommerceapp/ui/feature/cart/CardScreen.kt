@@ -1,4 +1,5 @@
 package com.pete.ecommerceapp.ui.feature.cart
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -7,7 +8,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -20,88 +20,173 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
+import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.pete.domain.di.model.CartItemModel
 import com.pete.ecommerceapp.R
+import com.pete.ecommerceapp.navigation.CartSummaryScreen
+import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CartScreen(
-    navController: NavHostController,
-    viewModel: CartViewModel = koinViewModel()
-) {
-    // collect your ui state
-    val uiState by viewModel.uiState.collectAsState()
-    // derive local flags
-    val isLoading = uiState is CartEvent.Loading
-    val errorMsg = (uiState as? CartEvent.Error)?.message
-    val items = (uiState as? CartEvent.Success)?.message.orEmpty()
+fun CartScreen(navController: NavController, viewModel: CartViewModel = koinViewModel()) {
+    val uiState = viewModel.uiState.collectAsState()
+    val removingItemId = viewModel.removingItemId.collectAsState()
+    val cartItems = remember { mutableStateOf(emptyList<CartItemModel>()) }
+    val loading = remember { mutableStateOf(false) }
+    val errorMsg = remember { mutableStateOf<String?>(null) }
+    val showDeleteDialog = remember { mutableStateOf<CartItemModel?>(null) }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(title = { Text("Cart") })
-        },
-        bottomBar = {
-            // only show when we have items and no error/loading
-            if (items.isNotEmpty() && !isLoading && errorMsg == null) {
-                Button(
-                    onClick = {},
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                ) {
-                    Text("Checkout")
+    LaunchedEffect(uiState.value) {
+        when (uiState.value) {
+            is CartEvent.Loading -> {
+                loading.value = true
+                errorMsg.value = null
+            }
+            is CartEvent.Error -> {
+                loading.value = false
+                errorMsg.value = (uiState.value as CartEvent.Error).message
+            }
+            is CartEvent.Success -> {
+                loading.value = false
+                val data = (uiState.value as CartEvent.Success).message
+                cartItems.value = data
+                if (data.isEmpty()) {
+                    errorMsg.value = "No items in cart"
                 }
             }
         }
-    ) { innerPadding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize().padding(innerPadding)
-        ) {
-            when {
-                isLoading -> {
-                    CircularProgressIndicator(
-                        modifier = Modifier.align(Alignment.Center)
-                    )
+    }
+
+    if (showDeleteDialog.value != null) {
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = { showDeleteDialog.value = null },
+            title = { Text("Remove Item") },
+            text = { Text("Are you sure you want to remove this item from your cart?") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showDeleteDialog.value?.let { item ->
+                            viewModel.removeItem(item)
+                            showDeleteDialog.value = null
+                        }
+                    }
+                ) {
+                    Text("Remove")
                 }
-                errorMsg != null -> {
-                    Text(
-                        text = errorMsg,
-                        modifier = Modifier.align(Alignment.Center)
-                    )
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog.value = null }) {
+                    Text("Cancel")
                 }
-                else -> {
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(16.dp)
-                    ) {
-                        items(items) { item ->
-                            CartItem(
-                                item = item,
-                                onIncrement = { viewModel.incrementQuantity(it) },
-                                onDecrement = { viewModel.decrementQuantity(it) },
-                                onRemove = { viewModel.removeItem(it) }
+            }
+        )
+    }
+
+    Column(modifier = Modifier.fillMaxSize()) {
+        val pullToRefreshState = rememberPullToRefreshState()
+        if (pullToRefreshState.isRefreshing) {
+            LaunchedEffect(true) {
+                viewModel.getCart()
+                delay(500)
+                pullToRefreshState.endRefresh()
+            }
+        }
+
+        Box(modifier = Modifier.fillMaxSize()) {
+            Text(
+                text = "Cart",
+                style = MaterialTheme.typography.titleSmall,
+                modifier = Modifier.align(Alignment.TopCenter)
+            )
+            PullToRefreshContainer(
+                state = pullToRefreshState, 
+                modifier = Modifier.align(Alignment.TopCenter)
+            )
+            
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .nestedScroll(pullToRefreshState.nestedScrollConnection)
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Spacer(modifier = Modifier.size(8.dp))
+                
+                when {
+                    loading.value -> {
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            CircularProgressIndicator()
+                            Spacer(modifier = Modifier.size(16.dp))
+                            Text(
+                                text = "Loading cart...",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
-                            Spacer(modifier = Modifier.height(8.dp))
+                        }
+                    }
+                    errorMsg.value != null -> {
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Text(
+                                text = errorMsg.value ?: "Something went wrong!",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                            Spacer(modifier = Modifier.size(16.dp))
+                            Button(
+                                onClick = { viewModel.getCart() }
+                            ) {
+                                Text("Retry")
+                            }
+                        }
+                    }
+                    cartItems.value.isNotEmpty() -> {
+                        LazyColumn(
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            items(cartItems.value, key = { it.id }) { item ->
+                                CartItem(
+                                    item = item,
+                                    onIncrement = { viewModel.incrementQuantity(it) },
+                                    onDecrement = { viewModel.decrementQuantity(it) },
+                                    onRemove = { showDeleteDialog.value = it },
+                                    isRemoving = removingItemId.value == item.id
+                                )
+                            }
+                        }
+                        
+                        Button(
+                            onClick = { navController.navigate(CartSummaryScreen) },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(text = "Checkout")
                         }
                     }
                 }
@@ -115,7 +200,8 @@ fun CartItem(
     item: CartItemModel,
     onIncrement: (CartItemModel) -> Unit,
     onDecrement: (CartItemModel) -> Unit,
-    onRemove: (CartItemModel) -> Unit
+    onRemove: (CartItemModel) -> Unit,
+    isRemoving: Boolean
 ) {
     Row(
         modifier = Modifier
@@ -153,18 +239,45 @@ fun CartItem(
             horizontalAlignment = Alignment.End,
             modifier = Modifier.padding(8.dp)
         ) {
-            IconButton(onClick = { onRemove(item)}) {
-                Icon(painterResource(R.drawable.trash_can), contentDescription = "Remove")
+            IconButton(
+                onClick = { onRemove(item) },
+                enabled = !isRemoving
+            ) {
+                if (isRemoving) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                } else {
+                    Icon(
+                        painter = painterResource(R.drawable.trash_can),
+                        contentDescription = "Remove"
+                    )
+                }
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = { onDecrement(item) }) {
-                    Icon(painterResource(R.drawable.minus), contentDescription = "Decrease")
+                IconButton(
+                    onClick = { onDecrement(item) },
+                    enabled = !isRemoving
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.minus),
+                        contentDescription = "Decrease"
+                    )
                 }
                 Text(item.quantity.toString())
-                IconButton(onClick = { onIncrement(item) }) {
-                    Icon(painterResource(R.drawable.baseline_add_24), contentDescription = "Increase")
+                IconButton(
+                    onClick = { onIncrement(item) },
+                    enabled = !isRemoving
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.baseline_add_24),
+                        contentDescription = "Increase"
+                    )
                 }
             }
         }
     }
 }
+
+

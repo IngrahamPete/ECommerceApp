@@ -14,11 +14,14 @@ import kotlinx.coroutines.launch
 class CartViewModel(
     val cartUseCase: GetCartUseCase,
     private val updateQuantityUSeCase: UpdateQuantityUSeCase,
-    private val deleteItem:DeleteProductUSeCase
+    private val deleteItem: DeleteProductUSeCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<CartEvent>(CartEvent.Loading)
     val uiState = _uiState.asStateFlow()
+
+    private val _removingItemId = MutableStateFlow<Int?>(null)
+    val removingItemId = _removingItemId.asStateFlow()
 
     init {
         getCart()
@@ -32,7 +35,6 @@ class CartViewModel(
                     is ResultWrapper.Success -> {
                         _uiState.value = CartEvent.Success(result.value.data)
                     }
-
                     is ResultWrapper.Failure -> {
                         _uiState.value = CartEvent.Error("Failed to load cart items")
                     }
@@ -41,36 +43,10 @@ class CartViewModel(
         }
     }
 
-        fun updateQuantity(cartItem: CartItemModel) {
-            viewModelScope.launch {
-                _uiState.value = CartEvent.Loading
-                val result = updateQuantityUSeCase.execute(cartItem)
-                when (result) {
-                    is ResultWrapper.Success -> {
-                        _uiState.value = CartEvent.Success(result.value.data)
-                    }
-                    is ResultWrapper.Failure -> {
-                        _uiState.value = CartEvent.Error("Failed to update quantity")
-                    }
-                }
-            }
-        }
-    fun incrementQuantity(cartItem: CartItemModel) {
-        if (cartItem.quantity == 10) return
-        updateQuantity(cartItem.copy(quantity = cartItem.quantity + 1))
-
-    }
-
-    fun decrementQuantity(cartItem: CartItemModel) {
-        if (cartItem.quantity == 1) return
-        updateQuantity(cartItem.copy(quantity = cartItem.quantity - 1))
-
-    }
-
-    fun removeItem(cartItem: CartItemModel) {
+    fun updateQuantity(cartItem: CartItemModel) {
         viewModelScope.launch {
             _uiState.value = CartEvent.Loading
-            val result =deleteItem.execute(cartItem.id, userId = 1)
+            val result = updateQuantityUSeCase.execute(cartItem)
             when (result) {
                 is ResultWrapper.Success -> {
                     _uiState.value = CartEvent.Success(result.value.data)
@@ -80,12 +56,35 @@ class CartViewModel(
                 }
             }
         }
+    }
 
+    fun incrementQuantity(cartItem: CartItemModel) {
+        if (cartItem.quantity == 10) return
+        updateQuantity(cartItem.copy(quantity = cartItem.quantity + 1))
+    }
+
+    fun decrementQuantity(cartItem: CartItemModel) {
+        if (cartItem.quantity == 1) return
+        updateQuantity(cartItem.copy(quantity = cartItem.quantity - 1))
+    }
+
+    fun removeItem(cartItem: CartItemModel) {
+        viewModelScope.launch {
+            _removingItemId.value = cartItem.id
+            _uiState.value = CartEvent.Loading
+            val result = deleteItem.execute(cartItem.id, userId = 1)
+            when (result) {
+                is ResultWrapper.Success -> {
+                    _uiState.value = CartEvent.Success(result.value.data)
+                }
+                is ResultWrapper.Failure -> {
+                    _uiState.value = CartEvent.Error("Failed to remove item from cart")
+                }
+            }
+            _removingItemId.value = null
+        }
     }
 }
-
-
-
 
 sealed class CartEvent {
     data object Loading : CartEvent()

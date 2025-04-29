@@ -98,17 +98,18 @@ class NetworkServiceImp(
     }
 
     override suspend fun deleteItem(cartItemId: Int, userId: Int): ResultWrapper<CartModel> {
-        val url= "$baseUrl/cart/userId/${cartItemId}"
+        val url = "$baseUrl/cart/$userId/$cartItemId"
         return makeWebRequest(
             url = url,
             method = HttpMethod.Delete,
             mapper = { cartItem: CartResponse ->
                 cartItem.toCartModel()
-            })
+            }
+        )
     }
 
     override suspend fun getCartSummary(userId: Int): ResultWrapper<CartSummary> {
-        val url = "$baseUrl/checkout/$userId/summary/"
+        val url = "$baseUrl/checkout/$userId/summary"
         return makeWebRequest(
             url = url,
             method = HttpMethod.Get,

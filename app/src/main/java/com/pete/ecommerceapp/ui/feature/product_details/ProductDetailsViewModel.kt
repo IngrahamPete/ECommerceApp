@@ -10,22 +10,23 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class ProductDetailsViewModel(val useCase: AddToCartUseCase):ViewModel(){
+class ProductDetailsViewModel(
+    private val addToCartUseCase: AddToCartUseCase
+): ViewModel() {
     private val _state = MutableStateFlow<ProductDetailsEvent>(ProductDetailsEvent.Nothing)
     val state = _state.asStateFlow()
 
     fun addProductToCart(product: UiProductModel) {
         viewModelScope.launch {
             _state.value = ProductDetailsEvent.Loading
-            val result = useCase.execute(
+            val result = addToCartUseCase.execute(
                 AddCartRequestModel(
                     product.id,
                     product.title,
                     product.price,
-                  quantity = 1,
+                    quantity = 1,
                     userId = 1
-                ),
-
+                )
             )
             when (result) {
                 is ResultWrapper.Success -> {
@@ -33,18 +34,17 @@ class ProductDetailsViewModel(val useCase: AddToCartUseCase):ViewModel(){
                 }
 
                 is ResultWrapper.Failure -> {
-                    _state.value = ProductDetailsEvent.Error("Something went wrong!")
+                    _state.value = ProductDetailsEvent.Error("Failed to add product to cart")
                 }
             }
         }
     }
 
 
-}
-
-sealed class ProductDetailsEvent {
-    data object Loading : ProductDetailsEvent()
-    data object Nothing : ProductDetailsEvent()
-    data class Success(val message: String) : ProductDetailsEvent()
-    data class Error(val message: String) : ProductDetailsEvent()
+    sealed class ProductDetailsEvent {
+        data object Loading : ProductDetailsEvent()
+        data object Nothing : ProductDetailsEvent()
+        data class Success(val message: String) : ProductDetailsEvent()
+        data class Error(val message: String) : ProductDetailsEvent()
+    }
 }
