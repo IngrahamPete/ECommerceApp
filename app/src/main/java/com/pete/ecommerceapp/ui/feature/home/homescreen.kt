@@ -50,6 +50,7 @@ import coil.compose.AsyncImage
 import com.pete.domain.di.model.Product
 import com.pete.ecommerceapp.R
 import com.pete.ecommerceapp.model.UiProductModel
+import com.pete.ecommerceapp.navigation.CartScreen
 import com.pete.ecommerceapp.navigation.ProductDetails
 import org.koin.androidx.compose.koinViewModel
 
@@ -101,7 +102,7 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel = koinView
                 loading.value,
                 error.value, onClick = {
                     navController.navigate(ProductDetails(UiProductModel.fromProduct(it)))
-                })
+                }, navController)
         }
     }
 }
@@ -137,7 +138,7 @@ fun SearchBar(value:String,onTextChange:(String)->Unit) {
 
 
 @Composable
-fun ProfileHeader()
+fun ProfileHeader(navController: NavController)
 {
     Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 16.dp
     ))
@@ -163,8 +164,9 @@ fun ProfileHeader()
                 .size(48.dp)
                 .padding(8.dp)
                 .clip(CircleShape)
-                .background(Color.LightGray.copy(alpha=0.3f)
-                ), contentScale = ContentScale.Inside
+                .background(Color.LightGray.copy(alpha=0.3f))
+                .clickable { navController.navigate(CartScreen) },
+            contentScale = ContentScale.Inside
         )
     }
 }
@@ -173,11 +175,11 @@ fun ProfileHeader()
 fun HomeContent(featured:List<Product>,
                 popularProduct: List<Product>,
                 categories:List<String>,isLoading:Boolean=false,
-                errorMsg:String?=null,onClick: (Product) -> Unit)
+                errorMsg:String?=null,onClick: (Product) -> Unit, navController: NavController)
 {
     LazyColumn {
         item {
-            ProfileHeader()
+            ProfileHeader(navController)
             Spacer(modifier = Modifier.size(16.dp))
             SearchBar(value = "", onTextChange ={} )
             Spacer(modifier = Modifier.size(16.dp))

@@ -2,6 +2,7 @@ package com.pete.ecommerceapp.di
 
 import com.pete.ecommerceapp.ui.feature.cart.CartViewModel
 import com.pete.ecommerceapp.ui.feature.home.HomeViewModel
+import com.pete.ecommerceapp.ui.feature.orders.OrderViewModel
 import com.pete.ecommerceapp.ui.feature.product_details.ProductDetailsViewModel
 import com.pete.ecommerceapp.ui.feature.summary.CartSummaryViewModel
 import org.koin.core.module.dsl.viewModel
@@ -19,7 +20,17 @@ val viewModelModule= module {
         CartViewModel(get(),get(),get())
     }
     viewModel {
-        CartSummaryViewModel(get())
+        CartSummaryViewModel(get(),get())
     }
+    viewModel {
+        OrderViewModel(get())
+    }
+    viewModel {
+        com.pete.ecommerceapp.ui.feature.account.login.LoginViewModel(get())
+    }
+    viewModel {
+        com.pete.ecommerceapp.ui.feature.account.Register.RegisterViewModel(get())
+    }
+
 
 }

@@ -7,6 +7,7 @@ import com.pete.domain.di.network.ResultWrapper
 import com.pete.domain.di.usecase.DeleteProductUSeCase
 import com.pete.domain.di.usecase.GetCartUseCase
 import com.pete.domain.di.usecase.UpdateQuantityUSeCase
+import com.pete.ecommerceapp.ShopperSession
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -19,7 +20,7 @@ class CartViewModel(
 
     private val _uiState = MutableStateFlow<CartEvent>(CartEvent.Loading)
     val uiState = _uiState.asStateFlow()
-
+    val userDomainModel=ShopperSession.getUser()
     private val _removingItemId = MutableStateFlow<Int?>(null)
     val removingItemId = _removingItemId.asStateFlow()
 
@@ -30,7 +31,7 @@ class CartViewModel(
     fun getCart() {
         viewModelScope.launch {
             _uiState.value = CartEvent.Loading
-            cartUseCase.execute().let { result ->
+            cartUseCase.execute(userDomainModel!!.id!!.toLong()).let { result ->
                 when (result) {
                     is ResultWrapper.Success -> {
                         _uiState.value = CartEvent.Success(result.value.data)
@@ -46,7 +47,7 @@ class CartViewModel(
     fun updateQuantity(cartItem: CartItemModel) {
         viewModelScope.launch {
             _uiState.value = CartEvent.Loading
-            val result = updateQuantityUSeCase.execute(cartItem)
+            val result = updateQuantityUSeCase.execute(cartItem,userDomainModel!!.id!!.toLong())
             when (result) {
                 is ResultWrapper.Success -> {
                     _uiState.value = CartEvent.Success(result.value.data)

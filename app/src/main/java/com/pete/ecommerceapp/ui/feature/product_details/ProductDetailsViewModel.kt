@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.pete.domain.di.model.request.AddCartRequestModel
 import com.pete.domain.di.network.ResultWrapper
 import com.pete.domain.di.usecase.AddToCartUseCase
+import com.pete.ecommerceapp.ShopperSession
 import com.pete.ecommerceapp.model.UiProductModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -15,6 +16,7 @@ class ProductDetailsViewModel(
 ): ViewModel() {
     private val _state = MutableStateFlow<ProductDetailsEvent>(ProductDetailsEvent.Nothing)
     val state = _state.asStateFlow()
+    val userDomainModel= ShopperSession.getUser()
 
     fun addProductToCart(product: UiProductModel) {
         viewModelScope.launch {
@@ -24,9 +26,10 @@ class ProductDetailsViewModel(
                     product.id,
                     product.title,
                     product.price,
-                    quantity = 1,
-                    userId = 1
-                )
+                    1,
+                    userDomainModel!!.id!!
+                ),
+                userDomainModel.id!!.toLong()
             )
             when (result) {
                 is ResultWrapper.Success -> {

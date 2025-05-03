@@ -4,28 +4,31 @@ import androidx.lifecycle.viewModelScope
 import com.pete.domain.di.model.CartSummary
 import com.pete.domain.di.network.ResultWrapper
 import com.pete.domain.di.usecase.CartSummaryUseCase
+import com.pete.domain.di.usecase.PlaceOrderUseCase
+import com.pete.ecommerceapp.ShopperSession
+import com.pete.ecommerceapp.model.UserAddress
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class CartSummaryViewModel(
     private val cartSummaryUseCase: CartSummaryUseCase,
-   /* private val placeOrderUseCase: PlaceOrderUseCase,
-    private val shopperSession: ShopperSession*/
+   private val placeOrderUseCase: PlaceOrderUseCase,
+   /* private val shopperSession: ShopperSession*/
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<CartSummaryEvent>(CartSummaryEvent.Loading)
     val uiState = _uiState.asStateFlow()
-    /*val userDomainModel = shopperSession.getUser()*/
+    val userDomainModel = ShopperSession.getUser()
 
     init {
-        getCartSummary(1)
+        getCartSummary(userDomainModel!!.id!!)
     }
 
     private fun getCartSummary(userId: Int) {
         viewModelScope.launch {
             _uiState.value = CartSummaryEvent.Loading
-            val summary = cartSummaryUseCase.execute(userId)
+            val summary = cartSummaryUseCase.execute(userDomainModel!!.id!!.toLong())
             when (summary) {
                 is ResultWrapper.Success -> {
                     _uiState.value = CartSummaryEvent.Success(summary.value)
@@ -36,14 +39,12 @@ class CartSummaryViewModel(
                 }
             }
         }
-    }/*
+    }
+
     public fun placeOrder(userAddress: UserAddress) {
         viewModelScope.launch {
             _uiState.value = CartSummaryEvent.Loading
-            val orderId = placeOrderUseCase.execute(
-                userAddress.toAddressDataModel(),
-                userDomainModel!!.id!!.toLong()
-            )
+            val orderId = placeOrderUseCase.execute(userAddress.toAddressDataModel(),userDomainModel!!.id!!.toLong())
             when (orderId) {
                 is ResultWrapper.Success -> {
                     _uiState.value = CartSummaryEvent.PlaceOrder(orderId.value)
@@ -56,7 +57,7 @@ class CartSummaryViewModel(
         }
     }
 }
-*/
+
 
     sealed class CartSummaryEvent {
         data object Loading : CartSummaryEvent()
@@ -64,4 +65,3 @@ class CartSummaryViewModel(
         data class Success(val summary: CartSummary) : CartSummaryEvent()
         data class PlaceOrder(val orderId: Long) : CartSummaryEvent()
     }
-}

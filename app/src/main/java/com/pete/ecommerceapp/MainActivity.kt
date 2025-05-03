@@ -32,13 +32,23 @@ import com.pete.ecommerceapp.model.UiProductModel
 import com.pete.ecommerceapp.navigation.CartScreen
 import com.pete.ecommerceapp.navigation.CartSummaryScreen
 import com.pete.ecommerceapp.navigation.HomeScreen
+import com.pete.ecommerceapp.navigation.LoginScreen
+import com.pete.ecommerceapp.navigation.OrdersScreen
 import com.pete.ecommerceapp.navigation.ProductDetails
 import com.pete.ecommerceapp.navigation.ProfileScreen
+import com.pete.ecommerceapp.navigation.RegisterScreen
+import com.pete.ecommerceapp.navigation.UserAddressRoute
+import com.pete.ecommerceapp.navigation.UserAddressRouteWrapper
 import com.pete.ecommerceapp.navigation.productNavType
+import com.pete.ecommerceapp.navigation.userAddressNavType
+import com.pete.ecommerceapp.ui.feature.account.Register.RegisterScreen
+import com.pete.ecommerceapp.ui.feature.account.login.LoginScreen
 import com.pete.ecommerceapp.ui.feature.cart.CartScreen
 import com.pete.ecommerceapp.ui.feature.home.HomeScreen
+import com.pete.ecommerceapp.ui.feature.orders.OrdersScreen
 import com.pete.ecommerceapp.ui.feature.product_details.ProductDetailsScreen
 import com.pete.ecommerceapp.ui.feature.summary.CartSummaryScreen
+import com.pete.ecommerceapp.ui.feature.user_address.UserAddressScreen
 import com.pete.ecommerceapp.ui.theme.ECommerceAppTheme
 import kotlin.reflect.typeOf
 
@@ -64,8 +74,26 @@ class MainActivity : ComponentActivity() {
                     }
 
                 ) {
+                    val start =if (ShopperSession.getUser()!=null) {
+                       HomeScreen
+                    }
+                    else{
+                        LoginScreen
+                    }
                     Surface(modifier = Modifier.padding(it)) { }
-                    NavHost(navController = navController, startDestination = HomeScreen) {
+                    NavHost(navController = navController, startDestination = start) {
+                        composable<LoginScreen>
+                        {
+                            shouldShowBottomNav.value = false
+                            LoginScreen(navController)
+
+                        }
+                        composable<RegisterScreen>
+                        {
+                            shouldShowBottomNav.value = false
+                            RegisterScreen(navController)
+                        }
+
                         composable<HomeScreen> {
                             shouldShowBottomNav.value = true
                             shouldShowFab.value = true
@@ -76,13 +104,17 @@ class MainActivity : ComponentActivity() {
                             shouldShowFab.value = false
                             CartScreen(navController)
                         }
+                        composable<OrdersScreen> {
+                            shouldShowBottomNav.value = true
+                            OrdersScreen()
+                        }
                         composable<ProfileScreen> {
                             shouldShowBottomNav.value = true
                             shouldShowFab.value = false
                             Text(text = "Cart")
                         }
                         composable<CartSummaryScreen> {
-                            shouldShowBottomNav.value = false
+                            shouldShowBottomNav.value = true
                             shouldShowFab.value = false
                             CartSummaryScreen(navController=navController)
                         }
@@ -94,6 +126,19 @@ class MainActivity : ComponentActivity() {
                             val productRoute = it.toRoute<ProductDetails>()
                             ProductDetailsScreen(navController, productRoute.product)
                         }
+                        composable<UserAddressRoute>(
+                            typeMap = mapOf(typeOf<UserAddressRouteWrapper>() to userAddressNavType)
+                        ) {
+                            shouldShowBottomNav.value = false
+                            shouldShowFab.value = false
+                            val userAddressRoute = it.toRoute<UserAddressRoute>()
+                            UserAddressScreen(
+                                navController = navController,
+                                userAddress = userAddressRoute.userAddressWrapper.userAddress
+                            )
+                        }
+
+
                     }
                 }
             }
@@ -106,7 +151,7 @@ fun BottomNavigationBar(navController: NavController){
         val currentRoute = navController.currentBackStackEntry?.destination?.route
         val items= listOf(
             BottomNavItems.Home,
-            BottomNavItems.Cart,
+            BottomNavItems.Orders,
             BottomNavItems.Profile
         )
         items.forEach {
@@ -149,6 +194,6 @@ fun BottomNavigationBar(navController: NavController){
 sealed class BottomNavItems(val route:Any,val title:String,val icon:Int)
 {
     data object Home:BottomNavItems(HomeScreen,"Home", icon=R.drawable.baseline_home_24)
-    data object Cart:BottomNavItems(CartScreen,"Cart", icon=R.drawable.baseline_shopping_cart_24)
+    data object Orders:BottomNavItems(OrdersScreen,"Orders", icon=R.drawable.baseline_shopping_cart_24)
     data object Profile:BottomNavItems(ProfileScreen,"Profile", icon=R.drawable.baseline_person_24)
 }}
