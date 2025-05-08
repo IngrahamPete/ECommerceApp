@@ -25,6 +25,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -49,6 +51,7 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.pete.domain.di.model.Product
 import com.pete.ecommerceapp.R
+import com.pete.ecommerceapp.ShopperSession
 import com.pete.ecommerceapp.model.UiProductModel
 import com.pete.ecommerceapp.navigation.CartScreen
 import com.pete.ecommerceapp.navigation.ProductDetails
@@ -108,65 +111,117 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel = koinView
 }
 
 @Composable
-fun SearchBar(value:String,onTextChange:(String)->Unit) {
+fun SearchBar(value: String, onTextChange: (String) -> Unit) {
     TextField(
         value = value,
         onValueChange = onTextChange,
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
         shape = RoundedCornerShape(32.dp),
-        leadingIcon =
-            {
-                Image( painter = painterResource(id = R.drawable.baseline_search_24),
-                    contentDescription = null,
-                    modifier = Modifier.size(24.dp))
-            }
-        , colors = TextFieldDefaults.
-        colors(focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent, focusedContainerColor = Color.LightGray.copy(alpha=0.3f),
-            unfocusedContainerColor = Color.LightGray.copy(alpha = 0.3f)
-    ),
-        placeholder ={
-        Text(
-            text = "Search for Products",
-            style = MaterialTheme.typography.bodySmall
-        )
-    }
+        leadingIcon = {
+            Image(
+                painter = painterResource(id = R.drawable.baseline_search_24),
+                contentDescription = null,
+                modifier = Modifier.size(24.dp)
+            )
+        },
+        colors = TextFieldDefaults.colors(
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent,
+            focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant
+        ),
+        placeholder = {
+            Text(
+                text = "Search for Products",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
     )
-
 }
 
-
-
 @Composable
-fun ProfileHeader(navController: NavController)
-{
-    Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 16.dp
-    ))
-    {
-        Row (verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.align(Alignment.CenterStart
-            ))
-        {
-            Image(painter = painterResource(id= R.drawable.ic_launcher_foreground), contentDescription = null, modifier = Modifier.size(48.dp))
-            Spacer(modifier = Modifier.width(8.dp))
+fun ProfileHeader(navController: NavController) {
+    val user = remember { ShopperSession.getUser() }
+    
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primaryContainer)
+                    .padding(8.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = user?.username?.firstOrNull()?.uppercase() ?: "G",
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                )
+            }
+            Spacer(modifier = Modifier.width(16.dp))
             Column {
-                Text(text = "Hello",
-                    style = MaterialTheme.typography.bodyMedium)
-                Text(text = "John Doe",
-                    style = MaterialTheme.typography.titleMedium
-                , fontWeight = FontWeight.SemiBold
+                Text(
+                    text = "Welcome back,",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = user?.username ?: "Guest",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.SemiBold
+                    )
+                )
+            }
+            Spacer(modifier = Modifier.weight(1f))
+            IconButton(
+                onClick = { navController.navigate(CartScreen) },
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.baseline_shopping_cart_24),
+                    contentDescription = "Cart",
+                    tint = MaterialTheme.colorScheme.primary
                 )
             }
         }
-        Image(
-            painter = painterResource(R.drawable.baseline_notifications_24), contentDescription = null,
-            modifier = Modifier.align(Alignment.CenterEnd)
-                .size(48.dp)
-                .padding(8.dp)
-                .clip(CircleShape)
-                .background(Color.LightGray.copy(alpha=0.3f))
-                .clickable { navController.navigate(CartScreen) },
-            contentScale = ContentScale.Inside
+    }
+}
+
+@Composable
+fun CategoryChip(category: String) {
+    Card(
+        modifier = Modifier.padding(horizontal = 4.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer
+        )
+    ) {
+        Text(
+            text = category.replaceFirstChar { it.uppercase() },
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onPrimaryContainer,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
         )
     }
 }
@@ -212,17 +267,7 @@ fun HomeContent(featured:List<Product>,
                         AnimatedVisibility(visible =isVisible.value,enter= fadeIn()+ expandVertically())
                         //animation end
                         {
-                            Text(text = category.replaceFirstChar { it.uppercase() } ,
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.SemiBold,
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                modifier = Modifier.
-                                padding(horizontal = 8.dp).
-                                clip(RoundedCornerShape(8.dp)).
-                                background(MaterialTheme.colorScheme.primary).
-                                padding(8.dp)
-                            )
-
+                            CategoryChip(category)
                         }
 
                     }
@@ -243,86 +288,84 @@ fun HomeContent(featured:List<Product>,
     }
 }
 
-
 @Composable
-fun HomeProductRow(products:List<Product>,title:String,onClick: (Product) -> Unit)
-{
-    Column {
-        Box(
-            modifier = Modifier.padding(horizontal = 16.dp)
-                .fillMaxWidth()
+fun HomeProductRow(products: List<Product>, title: String, onClick: (Product) -> Unit) {
+    Column(
+        modifier = Modifier.padding(vertical = 8.dp)
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleLarge.copy(
+                fontWeight = FontWeight.Bold
+            ),
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
         )
-        {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.align(
-                    Alignment.CenterStart
-                ),
-                fontWeight = FontWeight.SemiBold
-            )
-            Text(
-                text = "View all",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.align(
-                    Alignment.CenterEnd
-                )
-                ,
-            )
-        }
-        Spacer(modifier = Modifier.size(8.dp))
-        LazyRow {
-            items(products, key = {it.id}) { products ->
-                val isVisible= remember {
-                    mutableStateOf(false)
-                }
-                LaunchedEffect(key1 = true){
-                    isVisible.value=true
-
-                }
-                AnimatedVisibility(visible =isVisible.value,enter= fadeIn()+ expandVertically())
-                {
-                    ProductItem(product = products, onClick)
-                }
-
+        LazyRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp)
+        ) {
+            items(products) { product ->
+                ProductItem(product, onClick)
             }
         }
     }
 }
 
-
 @Composable
-fun ProductItem(product: Product,onClick:(Product)->Unit) {
+fun ProductItem(product: Product, onClick: (Product) -> Unit) {
     Card(
-        modifier = Modifier.padding(horizontal = 8.dp)
-            .size(width = 126.dp, height = 144.dp).clickable { onClick(product) },
+        modifier = Modifier
+            .padding(horizontal = 8.dp)
+            .size(width = 160.dp, height = 200.dp)
+            .clickable { onClick(product) },
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(contentColor = Color.Black)
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        )
     ) {
-        Column(modifier = Modifier.fillMaxSize()) {
-            AsyncImage(
-                model = product.image,
-                contentDescription = null,
-                modifier = Modifier.fillMaxWidth().height(96.dp)
-            )
-            Spacer(modifier = Modifier.size(8.dp))
-            Text(
-                text = product.title,
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(horizontal = 8.dp),
-                fontWeight = FontWeight.SemiBold,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-            Text(
-                text = "$${product.price}",
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(horizontal = 8.dp),
-                color= MaterialTheme.colorScheme.primary,
-                fontWeight = FontWeight.SemiBold
-            )
-
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(120.dp)
+                    .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+                AsyncImage(
+                    model = product.image,
+                    contentDescription = product.title,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop,
+                    placeholder = painterResource(id = R.drawable.ic_launcher_foreground),
+                    error = painterResource(id = R.drawable.ic_launcher_foreground),
+                    alignment = Alignment.Center
+                )
+            }
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(12.dp)
+            ) {
+                Text(
+                    text = product.title,
+                    style = MaterialTheme.typography.titleSmall.copy(
+                        fontWeight = FontWeight.SemiBold
+                    ),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "$${product.price}",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                )
+            }
         }
     }
 }

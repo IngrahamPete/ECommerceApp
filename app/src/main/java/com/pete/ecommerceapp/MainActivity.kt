@@ -111,7 +111,7 @@ class MainActivity : ComponentActivity() {
                         composable<ProfileScreen> {
                             shouldShowBottomNav.value = true
                             shouldShowFab.value = false
-                            Text(text = "Cart")
+                            com.pete.ecommerceapp.ui.feature.profile.ProfileScreen(navController)
                         }
                         composable<CartSummaryScreen> {
                             shouldShowBottomNav.value = true

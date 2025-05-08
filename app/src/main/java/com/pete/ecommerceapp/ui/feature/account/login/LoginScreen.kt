@@ -87,7 +87,7 @@ fun LoginContent(onSignInClicked: (String, String) -> Unit, onRegisterClick: () 
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Login", style = MaterialTheme.typography.titleLarge)
+        Text(text = "Login", style = MaterialTheme.typography.titleLarge)
         OutlinedTextField(
             value = email.value,
             onValueChange = {
@@ -97,7 +97,7 @@ fun LoginContent(onSignInClicked: (String, String) -> Unit, onRegisterClick: () 
                 .padding(vertical = 4.dp)
                 .fillMaxWidth()
                 .testTag("emailField"),
-            label = { Text(text = "Email") }
+            label = { Text(text ="Email") }
         )
         OutlinedTextField(
             value = password.value,
@@ -108,7 +108,7 @@ fun LoginContent(onSignInClicked: (String, String) -> Unit, onRegisterClick: () 
                 .padding(vertical = 8.dp)
                 .fillMaxWidth()
                 .testTag("passwordField"),
-            label = { Text(text="Password") },
+            label = { Text(text = "Password") },
             visualTransformation = PasswordVisualTransformation()
         )
         Button(
@@ -120,7 +120,8 @@ fun LoginContent(onSignInClicked: (String, String) -> Unit, onRegisterClick: () 
         ) {
             Text(text ="Login")
         }
-        Text(text = "Don't have an account? Register", modifier = Modifier
+        Text(text = "Don't have an account? Register"
+        ,modifier = Modifier
             .padding(8.dp)
             .clickable {
                 onRegisterClick()

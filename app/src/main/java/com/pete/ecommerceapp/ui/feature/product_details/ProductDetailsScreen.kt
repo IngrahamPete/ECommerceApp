@@ -134,38 +134,76 @@ fun ProductDetailsScreen(
                 modifier = Modifier.padding(horizontal = 16.dp),
                 color = Color.Gray
             )
-            Spacer(modifier = Modifier.size(8.dp))
+            Spacer(modifier = Modifier.size(16.dp))
             Text(
-                text = "Size",
+                text = "Quantity",
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.padding(start = 16.dp)
             )
             Spacer(modifier = Modifier.size(8.dp))
-            Row(modifier = Modifier.padding(horizontal = 16.dp)) {
-                repeat(4) { index ->
-                    SizeItem(
-                        size = "${index + 1}",
-                        isSelected = selectedSize.value == index,
-                        onClick = { selectedSize.value = index }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Quantity Controls
+                Row(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .border(
+                            width = 1.dp,
+                            color = MaterialTheme.colorScheme.outline,
+                            shape = RoundedCornerShape(8.dp)
+                        ),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(
+                        onClick = { viewModel.decreaseQuantity() },
+                        modifier = Modifier.size(40.dp)
+                    ) {
+                        Text(
+                            text = "-",
+                            style = MaterialTheme.typography.titleLarge,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    
+                    Text(
+                        text = viewModel.quantity.collectAsState().value.toString(),
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(horizontal = 16.dp)
                     )
+                    
+                    IconButton(
+                        onClick = { viewModel.increaseQuantity() },
+                        modifier = Modifier.size(40.dp)
+                    ) {
+                        Text(
+                            text = "+",
+                            style = MaterialTheme.typography.titleLarge,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
+                
+                Spacer(modifier = Modifier.weight(1f))
+                
+                // Total Price
+                Text(
+                    text = "Total: $${String.format("%.2f", product.price * viewModel.quantity.collectAsState().value)}",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                )
             }
-            Spacer(modifier = Modifier.size(16.dp))
+            Spacer(modifier = Modifier.size(24.dp))
             Row(modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
                 .padding(horizontal = 16.dp)) {
                 Button(
-                    onClick = {
-                        if (selectedSize.value >= 0) {
-                            viewModel.addProductToCart(product)
-                        } else {
-                            Toast.makeText(
-                                navController.context,
-                                "Please select a size",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
-                    },
+                    onClick = { viewModel.addProductToCart(product) },
                     modifier = Modifier.weight(1f),
                     enabled = !loading.value
                 ) {
@@ -173,17 +211,7 @@ fun ProductDetailsScreen(
                 }
                 Spacer(modifier = Modifier.size(20.dp))
                 IconButton(
-                    onClick = {
-                        if (selectedSize.value >= 0) {
-                            viewModel.addProductToCart(product)
-                        } else {
-                            Toast.makeText(
-                                navController.context,
-                                "Please select a size",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
-                    },
+                    onClick = { viewModel.addProductToCart(product) },
                     modifier = Modifier.padding(horizontal = 16.dp),
                     colors = IconButtonDefaults.iconButtonColors()
                         .copy(containerColor = Color.LightGray.copy(alpha = 0.4f)),
@@ -195,7 +223,7 @@ fun ProductDetailsScreen(
                     )
                 }
             }
-
+            Spacer(modifier = Modifier.size(16.dp))
         }
     }
 

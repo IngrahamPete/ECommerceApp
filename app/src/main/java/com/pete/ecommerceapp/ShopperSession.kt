@@ -32,5 +32,11 @@ object ShopperSession :KoinComponent{
         }
     }
 
-
+    fun logout() {
+        val sharedPref = context.getSharedPreferences("user", Context.MODE_PRIVATE)
+        with(sharedPref.edit()) {
+            clear()
+            apply()
+        }
+    }
 }

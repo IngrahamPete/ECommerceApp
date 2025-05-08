@@ -16,7 +16,22 @@ class ProductDetailsViewModel(
 ): ViewModel() {
     private val _state = MutableStateFlow<ProductDetailsEvent>(ProductDetailsEvent.Nothing)
     val state = _state.asStateFlow()
-    val userDomainModel= ShopperSession.getUser()
+    val userDomainModel = ShopperSession.getUser()
+    
+    private val _quantity = MutableStateFlow(1)
+    val quantity = _quantity.asStateFlow()
+
+    fun increaseQuantity() {
+        if (_quantity.value < 10) { // Maximum quantity limit
+            _quantity.value++
+        }
+    }
+
+    fun decreaseQuantity() {
+        if (_quantity.value > 1) { // Minimum quantity limit
+            _quantity.value--
+        }
+    }
 
     fun addProductToCart(product: UiProductModel) {
         viewModelScope.launch {
@@ -26,7 +41,7 @@ class ProductDetailsViewModel(
                     product.id,
                     product.title,
                     product.price,
-                    1,
+                    _quantity.value,
                     userDomainModel!!.id!!
                 ),
                 userDomainModel.id!!.toLong()
@@ -42,7 +57,6 @@ class ProductDetailsViewModel(
             }
         }
     }
-
 
     sealed class ProductDetailsEvent {
         data object Loading : ProductDetailsEvent()
